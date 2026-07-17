@@ -33,10 +33,10 @@ export const tutorialActivity: ForecastActivity = {
   }],
   publicDecisionRule: {
     kind: "forecast-only",
-    text: "장치에서 계산한 가능성으로 말 예보를 고릅니다.",
+    text: "신호판의 칸으로 가능성 말을 고릅니다.",
     options: ["even"],
   },
   evidenceOptions: ["장치의 같은 크기 칸은 파랑 4개, 노랑 4개예요."],
-  explanation: "관찰 비율이 2/3이라고 장치의 가능성이 2/3으로 바뀐 것은 아니에요.",
-  misconceptionNote: "짧은 관찰 자료만으로 장치의 구조를 바꾸어 말하지 않아요.",
+  explanation: "실제로 6번 중 4번 나왔어도 신호판의 칸은 4/8 그대로예요.",
+  misconceptionNote: "짧게 본 결과만으로 신호판의 칸이 바뀌었다고 말하지 않아요.",
 };

@@ -6,7 +6,7 @@ import type { Fraction, SourceKind, WordForecast } from "../domain/types";
 import { wordLabels } from "./session";
 
 export function SourceBadge({ kind }: { kind: SourceKind }) {
-  return <span className={`source-badge ${kind}`}>{kind === "known-model" ? "장치에서 계산" : "자료에서 관찰"}</span>;
+  return <span className={`source-badge ${kind}`}>{kind === "known-model" ? "신호판의 칸으로 계산" : "실제로 나온 결과로 계산"}</span>;
 }
 
 export function FractionView({ fraction, label }: { fraction: Fraction; label?: string }) {
@@ -52,9 +52,9 @@ export function ForecastChoices({ kind, value, onChange }: { kind: SourceKind; v
   const choices: WordForecast[] = kind === "known-model"
     ? ["impossible", "less-likely", "even", "more-likely", "certain"]
     : ["observed-none", "less-likely", "even", "more-likely", "observed-all"];
-  return <fieldset className="choice-set" data-error-target="forecast" tabIndex={-1}><legend>말 예보를 하나 고르세요</legend>
+  return <fieldset className="choice-set" data-error-target="forecast" tabIndex={-1}><legend>가능성 말을 하나 고르세요</legend>
     <div className="choice-grid">{choices.map((choice) => <label className="choice-card" key={choice}><input type="radio" data-testid={`forecast-${choice}`} name="forecast" value={choice} checked={value === choice} onChange={() => onChange(choice)} /><span>{wordLabels[choice]}</span></label>)}</div>
-    {kind === "observed-only" && <p className="hint">관찰 자료의 0/n, n/n은 ‘불가능’, ‘반드시’가 아니에요.</p>}
+    {kind === "observed-only" && <p className="hint">실제로 나온 결과가 0번이나 모두 나온 경우도 ‘불가능’, ‘반드시’는 아니에요.</p>}
   </fieldset>;
 }
 
@@ -64,8 +64,8 @@ export function DecisionChoices({ activity, value, onChange }: { activity: Forec
     if (option === "even") return "반반";
     return activity.streams.find((stream) => stream.id === option)?.label ?? option;
   };
-  return <fieldset className="choice-set" data-error-target="decision" tabIndex={-1}><legend>현재 자료로 임시 선택을 하나 고르세요</legend>
-    <p className="rule-text">이번 미션의 판단 규칙: {activity.publicDecisionRule.text}</p>
+  return <fieldset className="choice-set" data-error-target="decision" tabIndex={-1}><legend>지금 자료를 보고 하나 골라요</legend>
+    <p className="rule-text">고르는 기준: {activity.publicDecisionRule.text}</p>
     <div className="choice-grid">{activity.publicDecisionRule.options.map((option) => <label className="choice-card" key={option}><input type="radio" data-testid={`decision-${option}`} name="decision" value={option} checked={value === option} onChange={() => onChange(option)} /><span>{labelFor(option)}</span></label>)}</div>
   </fieldset>;
 }
@@ -73,8 +73,8 @@ export function DecisionChoices({ activity, value, onChange }: { activity: Forec
 export function ActivityCondition({ activity }: { activity: ForecastActivity }) {
   const primary = activity.streams.find((stream) => stream.id === activity.primaryStreamId)!;
   const labelForOutcome = (id: string) => activity.outcomes.find((outcome) => outcome.id === id)?.label ?? id;
-  return <section className="panel condition-panel"><SourceBadge kind={activity.sourceKind} /><h2>실험 조건을 먼저 확인해요</h2>
-    <dl className="condition-list"><div><dt>목표 사건</dt><dd>{primary.label}가 나타남</dd></div><div><dt>결과 종류</dt><dd>{activity.outcomes.map(({ label }) => label).join(", ")}</dd></div><div><dt>조건</dt><dd>{activity.knownModel?.replacementRule ?? "장치 안은 알 수 없고 결과 기록만 있어요."}</dd></div></dl>
-    {activity.knownModel && <div className="model-note"><strong>알려진 구조</strong><p>같은 가능성의 칸: {activity.knownModel.outcomes.map(labelForOutcome).join(" · ")}</p></div>}
+  return <section className="panel condition-panel"><SourceBadge kind={activity.sourceKind} /><h2>무엇을 찾을지 먼저 확인해요</h2>
+    <dl className="condition-list"><div><dt>찾을 결과</dt><dd>{primary.label}가 나타남</dd></div><div><dt>결과 그림</dt><dd>{activity.outcomes.map(({ label }) => label).join(", ")}</dd></div><div><dt>확인 방법</dt><dd>{activity.knownModel?.replacementRule ?? "안쪽은 알 수 없고, 실제로 나온 결과만 봐요."}</dd></div></dl>
+    {activity.knownModel && <div className="model-note"><strong>신호판의 칸</strong><p>각 칸은 뽑힐 기회가 같아요: {activity.knownModel.outcomes.map(labelForOutcome).join(" · ")}</p></div>}
   </section>;
 }

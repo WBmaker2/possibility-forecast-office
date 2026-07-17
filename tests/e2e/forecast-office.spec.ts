@@ -20,12 +20,12 @@ test("experiences the observed-data overclaim correction", async ({ page }) => {
   await openReadyPage(page);
   await page.getByRole("button", { name: "개념 먼저 보기" }).click();
   await page.getByTestId("source-overclaim-wrong-none").click();
-  await expect(page.getByTestId("source-overclaim-feedback")).toHaveText(/불가능이라고 할 수 없어요/);
+  await expect(page.getByTestId("source-overclaim-feedback")).toHaveText(/불가능은 아니에요/);
   await expect(page.locator("body")).not.toContainText("source-overclaim");
   await page.getByTestId("source-overclaim-right-none").click();
-  await expect(page.getByTestId("source-overclaim-feedback")).toHaveText(/아직 나오지 않았다는 뜻/);
+  await expect(page.getByTestId("source-overclaim-feedback")).toHaveText(/10번 중 0번/);
   await page.getByTestId("source-overclaim-right-all").click();
-  await expect(page.getByTestId("source-overclaim-feedback")).toHaveText(/매번 나타났다는 뜻/);
+  await expect(page.getByTestId("source-overclaim-feedback")).toHaveText(/10번 중 10번/);
 });
 
 test("shows a visible, focused count feedback banner before moving on", async ({ page }) => {
@@ -34,7 +34,7 @@ test("shows a visible, focused count feedback banner before moving on", async ({
   await page.getByTestId("condition-confirm").click();
   await page.getByTestId("first-count-confirm").click();
   const feedback = page.getByTestId("learning-feedback");
-  await expect(feedback).toHaveText(/목표 사건 횟수와 전체 횟수/);
+  await expect(feedback).toHaveText(/파랑 신호.*결과 그림/);
   await expect(feedback).toBeFocused();
   await expect(page.locator("body")).not.toContainText("count-mismatch");
 });
@@ -138,11 +138,11 @@ test("replaces an old error banner with record success feedback", async ({ page 
   await page.getByTestId(`revision-${revisionFor(mission)}`).check();
   await page.getByTestId("final-decision-confirm").click();
   await page.getByTestId("evidence-confirm").click();
-  await expect(page.getByTestId("learning-feedback")).toHaveText(/근거를 하나 이상/);
+  await expect(page.getByTestId("learning-feedback")).toHaveText(/이유를 하나 이상/);
   await page.getByTestId("evidence-0").check();
   await page.getByTestId("evidence-confirm").click();
-  await expect(page.getByRole("heading", { name: "예보 수정 기록" })).toBeVisible();
-  await expect(page.getByTestId("learning-feedback")).toHaveText(/근거를 연결해 기록했어요/);
+  await expect(page.getByRole("heading", { name: "내 예보 돌아보기" })).toBeVisible();
+  await expect(page.getByTestId("learning-feedback")).toHaveText(/이유를 골라 기록했어요/);
   await expect(page.getByTestId("learning-feedback")).toHaveClass(/success/);
 });
 
@@ -169,7 +169,7 @@ test("requires an explicit zero after returning a 0/5 choice to placeholder", as
   await page.getByTestId("first-blue-numerator").selectOption("");
   await page.getByTestId("first-blue-denominator").selectOption("5");
   await page.getByTestId("first-count-confirm").click();
-  await expect(page.getByTestId("learning-feedback")).toHaveText(/목표 사건 횟수와 전체 횟수/);
+  await expect(page.getByTestId("learning-feedback")).toHaveText(/각 결과가 몇 번 나왔는지/);
   await expect(page.getByRole("heading", { name: "첫 자료를 세어 봐요" })).toBeVisible();
 });
 
@@ -185,7 +185,7 @@ test("shows success feedback after every forecast and decision transition", asyn
   await expect(page.getByTestId("learning-feedback")).toHaveClass(/success/);
   await page.getByTestId(`decision-${tutorialActivity.checkpoints[0].reviewedDecision}`).check();
   await page.getByTestId("first-decision-confirm").click();
-  await expect(page.getByTestId("learning-feedback")).toHaveText(/이제 근거를 연결해 봐요/);
+  await expect(page.getByTestId("learning-feedback")).toHaveText(/이제 이유를 골라 봐요/);
   await expect(page.getByTestId("learning-feedback")).toHaveClass(/success/);
   await page.getByTestId("evidence-0").check();
   await page.getByTestId("evidence-confirm").click();
@@ -210,6 +210,50 @@ test("shows success feedback after every forecast and decision transition", asyn
   await page.getByTestId(`decision-${mission.checkpoints[1].reviewedDecision}`).check();
   await page.getByTestId(`revision-${revisionFor(mission)}`).check();
   await page.getByTestId("final-decision-confirm").click();
-  await expect(page.getByTestId("learning-feedback")).toHaveText(/누적 자료로 최종 선택을 정했어요/);
+  await expect(page.getByTestId("learning-feedback")).toHaveText(/모두 합친 자료로 최종 선택을 정했어요/);
   await expect(page.getByTestId("learning-feedback")).toHaveClass(/success/);
+});
+
+test("keeps the first action visible and uses child-friendly learning words", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openReadyPage(page);
+  const startButton = page.getByTestId("activity-start");
+  await expect(startButton).toBeVisible();
+  expect((await startButton.boundingBox())?.y).toBeLessThanOrEqual(700);
+  await expect(page.getByRole("button", { name: "선생님 안내" })).toBeVisible();
+  await page.getByTestId("concept-open").click();
+  await expect(page.getByText("신호판의 칸은 파랑 4칸, 모두 8칸이에요.")).toBeVisible();
+  await expect(page.getByText("실제로 나온 결과는 파랑이 6번 중 4번이에요.")).toBeVisible();
+  await expect(page.locator(".progress")).not.toContainText("개념 안내 · 개념 안내");
+  await page.getByRole("button", { name: "안내 연습 시작" }).click();
+  await page.getByTestId("condition-confirm").click();
+  await page.getByTestId("first-count-confirm").click();
+  const feedback = page.getByTestId("learning-feedback");
+  await expect(feedback).toHaveText(/파랑 신호/);
+  const feedbackSize = await feedback.evaluate((banner) => {
+    const message = banner.querySelector("span");
+    const bannerRect = banner.getBoundingClientRect();
+    const messageRect = message?.getBoundingClientRect();
+    const styles = getComputedStyle(banner);
+    const innerWidth = bannerRect.width - Number.parseFloat(styles.paddingLeft) - Number.parseFloat(styles.paddingRight) - Number.parseFloat(styles.borderLeftWidth) - Number.parseFloat(styles.borderRightWidth);
+    return { messageWidth: messageRect?.width ?? 0, messageHeight: messageRect?.height ?? 0, innerWidth };
+  });
+  expect(feedbackSize.messageWidth / feedbackSize.innerWidth).toBeGreaterThanOrEqual(0.8);
+  expect(feedbackSize.messageHeight).toBeLessThanOrEqual(80);
+  await expect(page.locator("main")).not.toContainText(/목표 사건|결과 배열|알려진 구조|판단 규칙|임시 선택|근거 연결|전후 기록/);
+  await openReadyPage(page, "/?fixture=summary");
+  await expect(page.locator(".progress")).not.toContainText("최종 요약 · 최종 요약");
+  await expect(page.getByRole("heading", { name: "내 예보 돌아보기" })).toBeVisible();
+  await expect(page.locator('[data-label="모두 합친 자료"]').first()).toBeVisible();
+  await expect(page.getByText("신호판의 칸과 실제로 나온 결과를 구분했어요.")).toBeVisible();
+});
+
+test("uses a natural count error for a mission with several results", async ({ page }) => {
+  await openReadyPage(page);
+  await page.getByTestId("activity-start").click();
+  await finishActivity(page, tutorialActivity);
+  await page.getByTestId("condition-confirm").click();
+  await page.getByTestId("first-count-confirm").click();
+  await expect(page.getByTestId("learning-feedback")).toHaveText(/각 결과가 몇 번 나왔는지/);
+  await expect(page.getByTestId("learning-feedback")).not.toContainText(/파랑 신호, 초록 신호가/);
 });
