@@ -104,6 +104,10 @@
 
 ## 7. 구현 기록
 
-- 상태: 계획 기록 완료, 구현 대기
+- 상태: 구현·회귀 검사 완료
 - 계획 승인: 사용자가 `먼저 md 문서로 기록을 남긴 뒤 구현까지 완료`하도록 명시해 별도의 승인 대기를 생략함
-- 구현 뒤 변경 파일, 검증 결과, 독립 리뷰 결과를 이 절에 추가할 예정
+- 변경 파일: `app/content/tutorial.ts`, `app/content/missions.ts`, `app/forecast/ForecastOffice.tsx`, `app/forecast/MissionFlow.tsx`, `app/forecast/visuals.tsx`, `app/forecast/session.ts`, `app/globals.css`, `tests/e2e/forecast-office.spec.ts`, `docs/verification-log.md`
+- 구현 내용: 시작 버튼을 소개 바로 아래로 옮기고, 375×812에서 위쪽 위치가 700px 이내임을 자동 검사했습니다. 핵심 화면의 어려운 운영 용어를 `찾을 결과`, `결과 그림`, `신호판의 칸`, `모두 합친 자료`, `첫 선택`, `이유 고르기`, `처음과 나중 비교`로 바꿨습니다. 한 결과·여러 결과 미션의 횟수 오류도 다시 세어 볼 결과를 구체적으로 안내합니다.
+- 검증 결과: typecheck·lint·단위 30개·콘텐츠 검사·build·SSR 2개·Playwright E2E 12개 통과. Codex 앱 내 브라우저에서 1280×900과 375×812 화면을 직접 조작해 시작·개념·오류 안내·최종 요약을 확인했습니다.
+- 실사용 수치: 375×812의 `예보 시작` 버튼 위쪽 위치가 약 1,169px에서 520px로 줄었고, 데스크톱·모바일 가로 넘침은 0px을 유지했습니다. 개념·요약 화면의 어려운 핵심 용어와 진행 이름 중복도 제거했습니다.
+- 독립 재검토: 문구·수학 규칙·모바일 피드백 레이아웃을 별도 검토했으며 Critical·Important·Minor 잔여 발견 없이 승인했습니다.
