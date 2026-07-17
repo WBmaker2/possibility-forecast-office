@@ -20,11 +20,23 @@ test("experiences the observed-data overclaim correction", async ({ page }) => {
   await openReadyPage(page);
   await page.getByRole("button", { name: "개념 먼저 보기" }).click();
   await page.getByTestId("source-overclaim-wrong-none").click();
-  await expect(page.getByTestId("source-overclaim-feedback")).toHaveText(/source-overclaim/);
+  await expect(page.getByTestId("source-overclaim-feedback")).toHaveText(/불가능이라고 할 수 없어요/);
+  await expect(page.locator("body")).not.toContainText("source-overclaim");
   await page.getByTestId("source-overclaim-right-none").click();
   await expect(page.getByTestId("source-overclaim-feedback")).toHaveText(/아직 나오지 않았다는 뜻/);
   await page.getByTestId("source-overclaim-right-all").click();
   await expect(page.getByTestId("source-overclaim-feedback")).toHaveText(/매번 나타났다는 뜻/);
+});
+
+test("shows a visible, focused count feedback banner before moving on", async ({ page }) => {
+  await openReadyPage(page);
+  await page.getByTestId("activity-start").click();
+  await page.getByTestId("condition-confirm").click();
+  await page.getByTestId("first-count-confirm").click();
+  const feedback = page.getByTestId("learning-feedback");
+  await expect(feedback).toHaveText(/목표 사건 횟수와 전체 횟수/);
+  await expect(feedback).toBeFocused();
+  await expect(page.locator("body")).not.toContainText("count-mismatch");
 });
 
 test("returns focus after closing update history and has no serious axe violations", async ({ page }) => {
@@ -55,8 +67,8 @@ async function chooseCounts(page: import("@playwright/test").Page, activity: For
   const counts = activity.checkpoints[checkpointIndex].expectedCounts;
   for (const stream of activity.streams) {
     const fraction = counts[stream.id];
-    await page.getByTestId(`${prefix}-${stream.id}-numerator-${fraction.numerator}`).check();
-    await page.getByTestId(`${prefix}-${stream.id}-denominator-${fraction.denominator}`).check();
+    await page.getByTestId(`${prefix}-${stream.id}-numerator`).selectOption(`${fraction.numerator}`);
+    await page.getByTestId(`${prefix}-${stream.id}-denominator`).selectOption(`${fraction.denominator}`);
   }
 }
 
@@ -103,4 +115,101 @@ test("completes the tutorial and all five deterministic missions", async ({ page
   for (const mission of missions) await finishActivity(page, mission);
   await expect(page.getByTestId("summary")).toBeVisible();
   await expect(page.locator(".summary-table tbody tr")).toHaveCount(5);
+});
+
+test("replaces an old error banner with record success feedback", async ({ page }) => {
+  await openReadyPage(page);
+  await page.getByTestId("activity-start").click();
+  await finishActivity(page, tutorialActivity);
+  const mission = missions[0];
+  await page.getByTestId("condition-confirm").click();
+  await chooseCounts(page, mission, 0, "first");
+  await page.getByTestId("first-count-confirm").click();
+  await page.getByTestId(`forecast-${mission.checkpoints[0].wordForecast}`).check();
+  await page.getByTestId("first-forecast-confirm").click();
+  await page.getByTestId(`decision-${mission.checkpoints[0].reviewedDecision}`).check();
+  await page.getByTestId("first-decision-confirm").click();
+  await page.getByTestId("reveal-next").click();
+  await chooseCounts(page, mission, 1, "cumulative");
+  await page.getByTestId("cumulative-count-confirm").click();
+  await page.getByTestId(`forecast-${mission.checkpoints[1].wordForecast}`).check();
+  await page.getByTestId("final-forecast-confirm").click();
+  await page.getByTestId(`decision-${mission.checkpoints[1].reviewedDecision}`).check();
+  await page.getByTestId(`revision-${revisionFor(mission)}`).check();
+  await page.getByTestId("final-decision-confirm").click();
+  await page.getByTestId("evidence-confirm").click();
+  await expect(page.getByTestId("learning-feedback")).toHaveText(/근거를 하나 이상/);
+  await page.getByTestId("evidence-0").check();
+  await page.getByTestId("evidence-confirm").click();
+  await expect(page.getByRole("heading", { name: "예보 수정 기록" })).toBeVisible();
+  await expect(page.getByTestId("learning-feedback")).toHaveText(/근거를 연결해 기록했어요/);
+  await expect(page.getByTestId("learning-feedback")).toHaveClass(/success/);
+});
+
+test("shows an info banner after going back from a step", async ({ page }) => {
+  await openReadyPage(page);
+  await page.getByTestId("activity-start").click();
+  await page.getByTestId("condition-confirm").click();
+  await page.getByRole("button", { name: "이전 단계" }).click();
+  await expect(page.getByTestId("learning-feedback")).toHaveText(/이전 단계로 돌아왔어요/);
+  await expect(page.getByTestId("learning-feedback")).toHaveClass(/info/);
+});
+
+test("requires an explicit zero after returning a 0/5 choice to placeholder", async ({ page }) => {
+  test.setTimeout(60_000);
+  await openReadyPage(page);
+  await page.getByTestId("activity-start").click();
+  await finishActivity(page, tutorialActivity);
+  for (const mission of missions.slice(0, 4)) await finishActivity(page, mission);
+  await page.getByTestId("condition-confirm").click();
+  await page.getByTestId("first-red-numerator").selectOption("5");
+  await page.getByTestId("first-red-denominator").selectOption("5");
+  await page.getByTestId("first-blue-numerator").selectOption("0");
+  await page.getByTestId("first-blue-numerator").selectOption("1");
+  await page.getByTestId("first-blue-numerator").selectOption("");
+  await page.getByTestId("first-blue-denominator").selectOption("5");
+  await page.getByTestId("first-count-confirm").click();
+  await expect(page.getByTestId("learning-feedback")).toHaveText(/목표 사건 횟수와 전체 횟수/);
+  await expect(page.getByRole("heading", { name: "첫 자료를 세어 봐요" })).toBeVisible();
+});
+
+test("shows success feedback after every forecast and decision transition", async ({ page }) => {
+  await openReadyPage(page);
+  await page.getByTestId("activity-start").click();
+  await page.getByTestId("condition-confirm").click();
+  await chooseCounts(page, tutorialActivity, 0, "first");
+  await page.getByTestId("first-count-confirm").click();
+  await page.getByTestId(`forecast-${tutorialActivity.checkpoints[0].wordForecast}`).check();
+  await page.getByTestId("first-forecast-confirm").click();
+  await expect(page.getByTestId("learning-feedback")).toHaveText(/첫 예보를 정했어요/);
+  await expect(page.getByTestId("learning-feedback")).toHaveClass(/success/);
+  await page.getByTestId(`decision-${tutorialActivity.checkpoints[0].reviewedDecision}`).check();
+  await page.getByTestId("first-decision-confirm").click();
+  await expect(page.getByTestId("learning-feedback")).toHaveText(/이제 근거를 연결해 봐요/);
+  await expect(page.getByTestId("learning-feedback")).toHaveClass(/success/);
+  await page.getByTestId("evidence-0").check();
+  await page.getByTestId("evidence-confirm").click();
+  await page.getByTestId("record-next").click();
+
+  const mission = missions[0];
+  await page.getByTestId("condition-confirm").click();
+  await chooseCounts(page, mission, 0, "first");
+  await page.getByTestId("first-count-confirm").click();
+  await page.getByTestId(`forecast-${mission.checkpoints[0].wordForecast}`).check();
+  await page.getByTestId("first-forecast-confirm").click();
+  await expect(page.getByTestId("learning-feedback")).toHaveText(/첫 예보를 정했어요/);
+  await page.getByTestId(`decision-${mission.checkpoints[0].reviewedDecision}`).check();
+  await page.getByTestId("first-decision-confirm").click();
+  await expect(page.getByTestId("learning-feedback")).toHaveText(/다음 자료를 살펴봐요/);
+  await page.getByTestId("reveal-next").click();
+  await chooseCounts(page, mission, 1, "cumulative");
+  await page.getByTestId("cumulative-count-confirm").click();
+  await page.getByTestId(`forecast-${mission.checkpoints[1].wordForecast}`).check();
+  await page.getByTestId("final-forecast-confirm").click();
+  await expect(page.getByTestId("learning-feedback")).toHaveText(/최종 예보를 정했어요/);
+  await page.getByTestId(`decision-${mission.checkpoints[1].reviewedDecision}`).check();
+  await page.getByTestId(`revision-${revisionFor(mission)}`).check();
+  await page.getByTestId("final-decision-confirm").click();
+  await expect(page.getByTestId("learning-feedback")).toHaveText(/누적 자료로 최종 선택을 정했어요/);
+  await expect(page.getByTestId("learning-feedback")).toHaveClass(/success/);
 });

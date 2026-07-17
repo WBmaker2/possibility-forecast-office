@@ -96,7 +96,8 @@ export function isCountSelectionCorrect(
   return activity.streams.every((stream) => {
     const choice = selections[stream.id];
     const fraction = expected[stream.id];
-    return Number(choice?.numerator) === fraction.numerator
+    if (choice?.numerator === undefined || choice.numerator === "" || choice?.denominator === undefined || choice.denominator === "") return false;
+    return Number(choice.numerator) === fraction.numerator
       && Number(choice?.denominator) === fraction.denominator;
   });
 }
@@ -108,6 +109,11 @@ export function countSelectionError(
 ): "fraction-mismatch" | "count-mismatch" | null {
   if (isCountSelectionCorrect(activity, batchCount, selections)) return null;
   const expected = activityCounts(activity, batchCount);
+  const incomplete = activity.streams.some((stream) => {
+    const choice = selections[stream.id];
+    return choice?.numerator === undefined || choice.numerator === "" || choice?.denominator === undefined || choice.denominator === "";
+  });
+  if (incomplete) return "count-mismatch";
   const reversed = activity.streams.some((stream) => {
     const choice = selections[stream.id];
     const fraction = expected[stream.id];

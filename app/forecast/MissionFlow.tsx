@@ -9,9 +9,9 @@ import { ActivityCondition, DecisionChoices, ForecastChoices, FractionView, Numb
 
 type Props = {
   activity: ForecastActivity; stage: LearningStage; answers: MissionAnswers; headingRef: React.RefObject<HTMLHeadingElement | null>;
-  firstCounts: Record<string, Fraction>; finalCounts: Record<string, Fraction>; knownFraction?: Fraction; firstSelections: CountSelections; cumulativeSelections: CountSelections; notice: string;
+  firstCounts: Record<string, Fraction>; finalCounts: Record<string, Fraction>; knownFraction?: Fraction; firstSelections: CountSelections; cumulativeSelections: CountSelections;
   onFirstSelections: (value: CountSelections) => void; onCumulativeSelections: (value: CountSelections) => void; onAnswers: (patch: Partial<MissionAnswers>) => void; onMove: (stage: LearningStage) => void;
-  onCount: () => void; onCumulative: () => void; onForecast: (batchCount: 1 | 2) => void; onFirstDecision: () => void; onFinalDecision: () => void; onRequire: (value: unknown, stage: LearningStage, message: string) => void; onEvidence: () => void; onNext: () => void;
+  onCount: () => void; onCumulative: () => void; onForecast: (batchCount: 1 | 2) => void; onFirstDecision: () => void; onFinalDecision: () => void; onEvidence: () => void; onNext: () => void;
 };
 
 function fractionText(fraction: Fraction) { return `${fraction.numerator}/${fraction.denominator}`; }
@@ -40,8 +40,20 @@ function CountStep({ activity, headingRef, firstCounts, firstSelections, onFirst
 }
 
 function CountPicker({ activity, counts, selections, onSelections, prefix }: { activity: ForecastActivity; counts: Record<string, Fraction>; selections: CountSelections; onSelections: (value: CountSelections) => void; prefix: string }) {
-  const choose = (id: string, field: "numerator" | "denominator", value: number) => onSelections({ ...selections, [id]: { ...selections[id], [field]: `${value}` } });
-  return <div className="count-picker" data-error-target="count" tabIndex={-1}>{activity.streams.map((stream) => { const correct = counts[stream.id]; const choice = selections[stream.id] ?? {}; return <fieldset key={stream.id}><legend>{stream.label}: 목표 사건과 전체 횟수</legend><div className="number-options">{Array.from({ length: correct.denominator + 1 }, (_, value) => <label key={`n-${value}`}><input type="radio" data-testid={`${prefix}-${stream.id}-numerator-${value}`} name={`${prefix}-${stream.id}-n`} checked={choice.numerator === `${value}`} onChange={() => choose(stream.id, "numerator", value)} />목표 {value}</label>)}</div><div className="number-options">{Array.from({ length: correct.denominator }, (_, index) => index + 1).map((value) => <label key={`d-${value}`}><input type="radio" data-testid={`${prefix}-${stream.id}-denominator-${value}`} name={`${prefix}-${stream.id}-d`} checked={choice.denominator === `${value}`} onChange={() => choose(stream.id, "denominator", value)} />전체 {value}</label>)}</div></fieldset>; })}</div>;
+  const choose = (id: string, field: "numerator" | "denominator", value: string) => onSelections({ ...selections, [id]: { ...selections[id], [field]: value || undefined } });
+  return <div className="count-picker">{activity.streams.map((stream) => {
+    const correct = counts[stream.id];
+    const choice = selections[stream.id] ?? {};
+    const values = Array.from({ length: correct.denominator + 1 }, (_, value) => value);
+    return <fieldset key={stream.id}>
+      <legend>{stream.label}: 목표 사건과 전체 횟수</legend>
+      <div className="count-fraction">
+        <label>나온 횟수<select data-testid={`${prefix}-${stream.id}-numerator`} aria-label={`${stream.label} 나온 횟수`} value={choice.numerator ?? ""} onChange={(event) => choose(stream.id, "numerator", event.target.value)}><option value="">고르기</option>{values.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+        <span aria-hidden="true">―</span>
+        <label>전체 횟수<select data-testid={`${prefix}-${stream.id}-denominator`} aria-label={`${stream.label} 전체 횟수`} value={choice.denominator ?? ""} onChange={(event) => choose(stream.id, "denominator", event.target.value)}><option value="">고르기</option>{values.slice(1).map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+      </div>
+    </fieldset>;
+  })}</div>;
 }
 
 function FinalDecision({ activity, headingRef, answers, onAnswers, onFinalDecision }: Props) {
@@ -60,7 +72,7 @@ function BeforeAfter({ activity, headingRef, answers, first, final, knownFractio
 }
 
 export function OfficeDialog({ name, onClose, onReset }: { name: "how" | "teacher" | "updates" | "reset"; onClose: () => void; onReset: () => void }) {
-  const contents = { how: ["조건을 확인하고 첫 자료를 세어요.", "말 예보와 임시 선택을 한 뒤 새 자료를 누적해요.", "예보를 유지하거나 수정하고 근거를 연결해요."], teacher: ["학생 이름·점수·시간은 저장하지 않습니다.", "관찰 자료 비율과 장치에서 계산한 가능성을 구분하도록 질문해 주세요.", "새로고침하면 현재 탭의 기록이 초기화됩니다."], updates: ["2026-07-17 · 최초 개발: 5개 미션과 안내 연습을 포함한 가능성 예보 활동을 구현했습니다.", "2026-07-17 · 개선: 알려진 구조·관찰 비율의 출처와 누적 자료, 예보 수정 기록을 분리해 표시했습니다."] } as const;
+  const contents = { how: ["조건을 확인하고 첫 자료를 세어요.", "말 예보와 임시 선택을 한 뒤 새 자료를 누적해요.", "예보를 유지하거나 수정하고 근거를 연결해요."], teacher: ["학생 이름·점수·시간은 저장하지 않습니다.", "관찰 자료 비율과 장치에서 계산한 가능성을 구분하도록 질문해 주세요.", "새로고침하면 현재 탭의 기록이 초기화됩니다."], updates: ["2026-07-17 · 최초 개발: 5개 미션과 안내 연습을 포함한 가능성 예보 활동을 구현했습니다.", "2026-07-17 · 개선: 알려진 구조·관찰 비율의 출처와 누적 자료, 예보 수정 기록을 분리해 표시했습니다.", "2026-07-17 · 기능·UI 개선: 화면 피드백, 두 칸 횟수 선택, 전체 6활동 진행률, 모바일 터치 영역을 보완했습니다.", "2026-07-17 · 안정화: 빈 선택은 정답으로 처리하지 않고, 단계 성공 뒤 다음 할 일을 안내합니다."] } as const;
   if (name === "reset") return <Dialog title="처음으로 돌아갈까요?" onClose={onClose}><p>현재 탭의 예보 기록은 사라지고 시작 화면으로 돌아가요.</p><div className="button-row"><button className="primary" onClick={onReset}>처음으로</button><button onClick={onClose}>계속 활동하기</button></div></Dialog>;
   const title = name === "how" ? "활동 방법" : name === "teacher" ? "교사용 안내" : "업데이트 내역";
   return <Dialog title={title} onClose={onClose}><ul className="dialog-list">{contents[name].map((item) => <li key={item}>{item}</li>)}</ul></Dialog>;

@@ -18,8 +18,17 @@ import {
   saveRecord,
   restartSession,
 } from "../../app/forecast/session";
+import { journeyProgress } from "../../app/forecast/progress";
 
 describe("학습 세션 계산", () => {
+  it("안내 연습과 다섯 미션을 하나의 여섯 활동 여정으로 계산합니다", () => {
+    expect(journeyProgress({ stage: "start" })).toMatchObject({ currentActivity: 0, totalActivities: 6, percent: 0 });
+    expect(journeyProgress({ stage: "first-count", activeKind: "tutorial" })).toMatchObject({ activityLabel: "안내 연습", currentActivity: 1, totalActivities: 6, percent: 3 });
+    expect(journeyProgress({ stage: "condition", activeKind: "mission", missionIndex: 0 })).toMatchObject({ activityLabel: "미션 1", currentActivity: 2, totalActivities: 6, percent: 18 });
+    expect(journeyProgress({ stage: "record", activeKind: "mission", missionIndex: 4 })).toMatchObject({ currentActivity: 6, totalActivities: 6, percent: 100 });
+    expect(journeyProgress({ stage: "summary" })).toMatchObject({ currentActivity: 6, totalActivities: 6, percent: 100 });
+  });
+
   it("첫 자료와 두 묶음 누적값을 콘텐츠 결과에서 계산합니다", () => {
     const mission = missions[1];
     expect(activityCounts(mission, 1).star).toEqual({ numerator: 8, denominator: 10 });
@@ -67,6 +76,17 @@ describe("학습 세션 계산", () => {
     expect(countSelectionError(missions[1], 1, {
       star: { numerator: "8", denominator: "10" },
     })).toBeNull();
+  });
+
+  it("0을 고른 뒤 다시 고르기로 되돌린 빈 선택은 0/5 정답으로 처리하지 않습니다", () => {
+    const streakMission = missions[4];
+    const selections = {
+      red: { numerator: "5", denominator: "5" },
+      blue: { numerator: "", denominator: "5" },
+    };
+
+    expect(isCountSelectionCorrect(streakMission, 1, selections)).toBe(false);
+    expect(countSelectionError(streakMission, 1, selections)).toBe("count-mismatch");
   });
 
   it("예보·판단·유지 수정 선택을 checkpoint와 비교합니다", () => {
