@@ -49,4 +49,6 @@ npm run build
 - [교사용 안내](docs/teacher-guide.md)
 - [검증 기록](docs/verification-log.md)
 
-Sites 배포 주소: 아직 미정입니다.
+Sites 배포 주소: [가능성 예보국 열기](https://possibility-forecast-office.wbmaker.chatgpt.site)
+
+현재 Sites 접근 범위는 소유자 전용이며, 접속할 때 ChatGPT 로그인이 필요합니다.
