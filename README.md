@@ -52,3 +52,13 @@ npm run build
 Sites 배포 주소: [가능성 예보국 열기](https://possibility-forecast-office.wbmaker.chatgpt.site)
 
 현재 Sites 접근 범위는 소유자 전용이며, 접속할 때 ChatGPT 로그인이 필요합니다.
+
+## GitHub Pages
+
+이 프로젝트는 고정된 실험 자료와 브라우저 메모리만 사용하는 정적 앱으로
+GitHub Pages에서도 사용할 수 있습니다.
+
+- `npm run build:pages`: GitHub Pages용 정적 사이트 빌드
+- 공개 주소: https://wbmaker2.github.io/possibility-forecast-office/
+- 배포 방식: `.github/workflows/deploy-pages.yml`
+- 정적 진입점: `pages/index.html`
