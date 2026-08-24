@@ -5,6 +5,7 @@ import { missions } from "../content/missions";
 import { tutorialActivity } from "../content/tutorial";
 import type { ForecastActivity } from "../content/schema";
 import { MissionFlow, OfficeDialog, Summary } from "./MissionFlow";
+import { countErrorMessage, decisionErrorMessage, forecastErrorMessage, revisionErrorMessage } from "./feedback";
 import { journeyProgress } from "./progress";
 import {
   activityCounts,
@@ -74,32 +75,30 @@ export function ForecastOffice() {
   function confirmCount() {
     const error = countSelectionError(active!, 1, firstSelections);
     if (error) {
-      const countTarget = active!.streams.length === 1 ? `${active!.streams[0].label}가` : "각 결과가";
-      setFeedback({ tone: "error", message: error === "fraction-mismatch" ? "분수의 위에는 나온 횟수, 아래에는 모두 몇 번인지 골라 주세요." : `${countTarget} 몇 번 나왔는지와 모두 몇 번인지 결과 그림에서 다시 세어 봐요.` });
+      setFeedback({ tone: "error", message: countErrorMessage(active!, 1, error) });
       return;
     }
     moveWithFeedback("first-forecast", { tone: "success", message: "첫 자료의 횟수를 확인했어요. 이 값을 바탕으로 예보해 봐요." });
   }
   function confirmCumulative() {
     const error = countSelectionError(active!, 2, cumulativeSelections);
-    const countTarget = active!.streams.length === 1 ? `${active!.streams[0].label}가` : "각 결과가";
-    if (error) { setFeedback({ tone: "error", message: error === "fraction-mismatch" ? "분수의 위에는 나온 횟수, 아래에는 모두 몇 번인지 골라 주세요." : `${countTarget} 몇 번 나왔는지 첫 자료와 새 자료를 함께 세어 봐요.` }); return; }
+    if (error) { setFeedback({ tone: "error", message: countErrorMessage(active!, 2, error) }); return; }
     moveWithFeedback("revised-forecast", { tone: "success", message: "모두 합친 횟수를 확인했어요. 이제 이 자료로 최종 예보를 정해 봐요." });
   }
   function confirmForecast(batchCount: 1 | 2) {
     const forecast = batchCount === 1 ? session.answers.firstForecast : session.answers.finalForecast;
-    if (!isForecastCorrect(active!, batchCount, forecast)) { setFeedback({ tone: "error", message: "신호판의 칸인지 실제로 나온 결과인지 확인하고, 알맞은 가능성 말을 골라요." }); return; }
+    if (!isForecastCorrect(active!, batchCount, forecast)) { setFeedback({ tone: "error", message: forecastErrorMessage(!forecast) }); return; }
     moveWithFeedback(batchCount === 1 ? "provisional-decision" : "revised-decision", { tone: "success", message: batchCount === 1 ? "첫 예보를 정했어요. 이제 첫 선택을 골라 봐요." : "최종 예보를 정했어요. 이제 모두 합친 자료로 최종 선택을 골라 봐요." });
   }
   function confirmFirstDecision() {
-    if (!isDecisionCorrect(active!, 1, session.answers.firstDecision)) { setFeedback({ tone: "error", message: "고르는 기준과 첫 자료를 다시 비교해 골라 주세요." }); return; }
+    if (!isDecisionCorrect(active!, 1, session.answers.firstDecision)) { setFeedback({ tone: "error", message: decisionErrorMessage(1, !session.answers.firstDecision) }); return; }
     const tutorial = active?.activityKind === "tutorial";
     moveWithFeedback(nextStageAfterDecision(active!), { tone: "success", message: tutorial ? "첫 선택을 정했어요. 이제 이유를 골라 봐요." : "첫 선택을 정했어요. 다음 자료를 살펴봐요." });
   }
   function confirmFinalDecision() {
-    if (!isDecisionCorrect(active!, 2, session.answers.finalDecision)) { setFeedback({ tone: "error", message: "모두 합친 자료와 고르는 기준을 다시 비교해 골라 주세요." }); return; }
+    if (!isDecisionCorrect(active!, 2, session.answers.finalDecision)) { setFeedback({ tone: "error", message: decisionErrorMessage(2, !session.answers.finalDecision) }); return; }
     const expected = expectedRevision(active!);
-    if (session.answers.revision !== expected) { setFeedback({ tone: "error", message: "첫 예보와 선택, 모두 합친 자료를 비교해 예보 유지, 예보 수정, 자료 더 보기 중 알맞은 것을 골라 주세요." }); return; }
+    if (session.answers.revision !== expected) { setFeedback({ tone: "error", message: revisionErrorMessage(active!, session.answers.revision) }); return; }
     moveWithFeedback("evidence", { tone: "success", message: "모두 합친 자료로 최종 선택을 정했어요. 이제 이유를 골라 봐요." });
   }
   function finishEvidence() {

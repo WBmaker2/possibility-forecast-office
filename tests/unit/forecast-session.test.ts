@@ -87,7 +87,7 @@ describe("학습 세션 계산", () => {
     };
 
     expect(isCountSelectionCorrect(streakMission, 1, selections)).toBe(false);
-    expect(countSelectionError(streakMission, 1, selections)).toBe("count-mismatch");
+    expect(countSelectionError(streakMission, 1, selections)).toBe("incomplete");
   });
 
   it("예보·판단·유지 수정 선택을 checkpoint와 비교합니다", () => {

@@ -32,6 +32,7 @@ export type MissionAnswers = {
 
 export type CountSelection = { numerator?: string; denominator?: string };
 export type CountSelections = Record<string, CountSelection>;
+export type CountSelectionError = "incomplete" | "fraction-mismatch" | "count-mismatch";
 
 export type ForecastRecord = {
   missionId: string;
@@ -106,14 +107,14 @@ export function countSelectionError(
   activity: ForecastActivity,
   batchCount: 1 | 2,
   selections: CountSelections,
-): "fraction-mismatch" | "count-mismatch" | null {
+): CountSelectionError | null {
   if (isCountSelectionCorrect(activity, batchCount, selections)) return null;
   const expected = activityCounts(activity, batchCount);
   const incomplete = activity.streams.some((stream) => {
     const choice = selections[stream.id];
     return choice?.numerator === undefined || choice.numerator === "" || choice?.denominator === undefined || choice.denominator === "";
   });
-  if (incomplete) return "count-mismatch";
+  if (incomplete) return "incomplete";
   const reversed = activity.streams.some((stream) => {
     const choice = selections[stream.id];
     const fraction = expected[stream.id];

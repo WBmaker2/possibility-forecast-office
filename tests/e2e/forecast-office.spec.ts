@@ -34,9 +34,17 @@ test("shows a visible, focused count feedback banner before moving on", async ({
   await page.getByTestId("condition-confirm").click();
   await page.getByTestId("first-count-confirm").click();
   const feedback = page.getByTestId("learning-feedback");
-  await expect(feedback).toHaveText(/파랑 신호.*결과 그림/);
+  await expect(feedback).toHaveText(/아직 고르지 않은 칸.*모든 나온 횟수와 전체 횟수/);
   await expect(feedback).toBeFocused();
   await expect(page.locator("body")).not.toContainText("count-mismatch");
+  await chooseCounts(page, tutorialActivity, 0, "first");
+  await page.getByTestId("first-count-confirm").click();
+  await page.getByTestId("first-forecast-confirm").click();
+  await expect(feedback).toHaveText(/아직 가능성 말을 고르지 않았어요/);
+  await page.getByTestId(`forecast-${tutorialActivity.checkpoints[0].wordForecast}`).check();
+  await page.getByTestId("first-forecast-confirm").click();
+  await page.getByTestId("first-decision-confirm").click();
+  await expect(feedback).toHaveText(/아직 첫 선택을 고르지 않았어요/);
 });
 
 test("returns focus after closing update history and has no serious axe violations", async ({ page }) => {
@@ -169,7 +177,7 @@ test("requires an explicit zero after returning a 0/5 choice to placeholder", as
   await page.getByTestId("first-blue-numerator").selectOption("");
   await page.getByTestId("first-blue-denominator").selectOption("5");
   await page.getByTestId("first-count-confirm").click();
-  await expect(page.getByTestId("learning-feedback")).toHaveText(/각 결과가 몇 번 나왔는지/);
+  await expect(page.getByTestId("learning-feedback")).toHaveText(/아직 고르지 않은 칸/);
   await expect(page.getByRole("heading", { name: "첫 자료를 세어 봐요" })).toBeVisible();
 });
 
@@ -254,6 +262,6 @@ test("uses a natural count error for a mission with several results", async ({ p
   await finishActivity(page, tutorialActivity);
   await page.getByTestId("condition-confirm").click();
   await page.getByTestId("first-count-confirm").click();
-  await expect(page.getByTestId("learning-feedback")).toHaveText(/각 결과가 몇 번 나왔는지/);
+  await expect(page.getByTestId("learning-feedback")).toHaveText(/아직 고르지 않은 칸/);
   await expect(page.getByTestId("learning-feedback")).not.toContainText(/파랑 신호, 초록 신호가/);
 });
