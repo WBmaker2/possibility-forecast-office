@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { missions } from "../../app/content/missions";
 import type { ForecastActivity } from "../../app/content/schema";
-import { MissionFlow } from "../../app/forecast/MissionFlow";
+import { MissionFlow, OfficeDialog } from "../../app/forecast/MissionFlow";
 import {
   activityCounts,
   knownModelFraction,
@@ -93,5 +93,33 @@ describe("학생 화면 문장", () => {
     expect(html).toContain("5/5");
     expect(html).toContain("예보에 쓸 신호판의 칸");
     expect(html).toContain("1/2");
+  });
+
+  it("분수 입력칸은 위와 아래에 무엇을 고르는지 말로 알려 줍니다", () => {
+    const html = renderMissionStage(missions[0], "first-count");
+
+    expect(html).toContain("분수 위 · 나온 횟수");
+    expect(html).toContain("분수 아래 · 전체 횟수");
+  });
+
+  it("모든 풀이 단계에 지금 할 일과 강조된 다음 버튼이 있습니다", () => {
+    const stages: LearningStage[] = ["condition", "first-count", "first-forecast", "provisional-decision", "reveal", "cumulative", "revised-forecast", "revised-decision", "evidence", "record"];
+
+    for (const stage of stages) {
+      const html = renderMissionStage(missions[0], stage);
+      expect(html, stage).toContain("지금 할 일");
+      expect(html, stage).toContain("primary guided-action");
+    }
+  });
+
+  it("업데이트 내역에 이번 학생 실사용 개선을 기록합니다", () => {
+    const html = renderToStaticMarkup(createElement(OfficeDialog, {
+      name: "updates",
+      onClose: ignore,
+      onReset: ignore,
+    }));
+
+    expect(html).toContain("2026-08-25");
+    expect(html).toContain("학생 실사용 재점검");
   });
 });

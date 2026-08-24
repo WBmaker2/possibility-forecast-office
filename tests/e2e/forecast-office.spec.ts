@@ -256,6 +256,21 @@ test("keeps the first action visible and uses child-friendly learning words", as
   await expect(page.getByText("신호판의 칸과 실제로 나온 결과를 구분했어요.")).toBeVisible();
 });
 
+test("makes the next action wide and gently noticeable on a phone", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openReadyPage(page);
+  await page.getByTestId("activity-start").click();
+
+  const nextButton = page.getByTestId("condition-confirm");
+  await expect(page.getByText("지금 할 일")).toBeVisible();
+  await expect(nextButton).toHaveClass(/guided-action/);
+  expect((await nextButton.boundingBox())?.width).toBeGreaterThanOrEqual(280);
+  await expect.poll(() => nextButton.evaluate((button) => getComputedStyle(button).animationName)).toContain("gi-pulse-aura");
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect.poll(() => nextButton.evaluate((button) => getComputedStyle(button).animationName)).toBe("none");
+});
+
 test("uses a natural count error for a mission with several results", async ({ page }) => {
   await openReadyPage(page);
   await page.getByTestId("activity-start").click();

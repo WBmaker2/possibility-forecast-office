@@ -9,6 +9,9 @@ button { min-height:44px; border:2px solid var(--navy); border-radius:9px; paddi
 button:hover { background:#e6f5f5; }
 button.primary { background:var(--navy); color:#fff; }
 button.primary:hover { background:#0a2a4e; }
+@keyframes gi-pulse-aura { 0%,100% { box-shadow:0 0 0 0 #007f8652; } 50% { box-shadow:0 0 0 8px #007f8614; } }
+.guided-action { animation:gi-pulse-aura 1.8s ease-in-out infinite; }
+.guided-action:hover,.guided-action:focus-visible { animation-play-state:paused; }
 button:focus-visible,select:focus-visible,input:focus-visible { outline:3px solid #e47800; outline-offset:3px; }
 h1,h2,h3,p { margin-top:0; } h1 { font-size:clamp(1.7rem,5vw,2.4rem); line-height:1.25; } h2 { font-size:1.25rem; line-height:1.35; } h3 { font-size:1.05rem; }
 .forecast-office { min-height:100vh; }
@@ -55,6 +58,10 @@ h1[tabindex="-1"]:focus { outline:none; }
 .source-comparison { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.5rem 1rem; }
 .source-comparison p { margin:0; }
 .source-comparison small { grid-column:1 / -1; color:var(--muted); }
+.step-action { width:100%; margin-top:1.1rem; }
+.action-cue { display:flex; gap:.55rem; align-items:flex-start; margin:0 0 .55rem; padding:.6rem .75rem; border-radius:9px; background:#fff4c7; font-size:.9rem; }
+.action-cue strong { flex:0 0 auto; color:#6b5000; }
+.step-action .guided-action { width:min(100%,32rem); min-height:52px; }
 .feedback-banner { display:flex; gap:.65rem; align-items:flex-start; margin:0 0 1rem; padding:.85rem 1rem; border:2px solid var(--teal); border-radius:10px; background:#edfafa; }
 .feedback-banner strong { flex:0 0 auto; color:#075c62; }.feedback-banner.error { border-color:#a84118; background:#fff0eb; }.feedback-banner.error strong { color:#8a2d0d; }.feedback-banner.info { border-color:#b28700; background:#fff9dd; }.feedback-banner.info strong { color:#705500; }.overclaim-practice .feedback-banner { margin:1rem 0 0; }
 .feedback-banner span,.step p,.concept p,.condition-list dd { word-break:keep-all; overflow-wrap:break-word; }
@@ -63,6 +70,9 @@ h1[tabindex="-1"]:focus { outline:none; }
   .learning-path { grid-template-columns:1fr; }
   .overclaim-options { grid-template-columns:1fr; }
   .feedback-banner { flex-direction:column; gap:.25rem; }
+  .source-comparison { grid-template-columns:1fr; }
+  .source-comparison small { grid-column:1; }
+  .step-action .guided-action { width:100%; }
   .summary-table { display:block; margin-top:0; }
   .summary-table thead { display:none; }
   .summary-table tbody { display:grid; gap:.75rem; }
