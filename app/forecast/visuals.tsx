@@ -2,6 +2,7 @@
 
 import type { ForecastActivity, ResultBatch, ResultStream } from "../content/schema";
 import { reduceFraction, relationToHalf } from "../domain/fractions";
+import { calculateKnownModelProbability } from "../domain/known-model";
 import type { Fraction, SourceKind, WordForecast } from "../domain/types";
 import { withSubjectParticle } from "./korean";
 import { decisionLabel, wordLabels } from "./session";
@@ -36,9 +37,10 @@ function OutcomeCell({ result, activity }: { result: string; activity: ForecastA
   return <span className="outcome-cell" data-outcome={result}>{label}</span>;
 }
 
-export function ResultBoard({ activity, stream, batch, heading }: { activity: ForecastActivity; stream: ResultStream; batch: ResultBatch; heading: string }) {
-  return <section className="result-board" aria-label={`${stream.label} ${heading}`}>
-    <h3>{heading} · {stream.label}</h3>
+export function ResultBoard({ activity, stream, batch, heading, displayLabel }: { activity: ForecastActivity; stream: ResultStream; batch: ResultBatch; heading: string; displayLabel?: string }) {
+  const label = displayLabel ?? stream.label;
+  return <section className="result-board" aria-label={`${label} ${heading}`}>
+    <h3>{heading} · {label}</h3>
     <div className="outcome-grid">
       {batch.results.map((result, index) => <OutcomeCell key={`${batch.id}-${index}`} result={result} activity={activity} />)}
     </div>
@@ -47,6 +49,19 @@ export function ResultBoard({ activity, stream, batch, heading }: { activity: Fo
       <tr><th scope="row">전체</th><td>{batch.totalTrials}번</td></tr>
     </tbody></table></details>
   </section>;
+}
+
+export function ResultBoards({ activity, batchIndex, heading }: { activity: ForecastActivity; batchIndex: 0 | 1; heading: string }) {
+  const groups = new Map<string, ResultStream[]>();
+  activity.streams.forEach((stream) => {
+    const batch = stream.batches[batchIndex];
+    const key = JSON.stringify([batch.totalTrials, batch.results]);
+    groups.set(key, [...(groups.get(key) ?? []), stream]);
+  });
+  return <div className="stream-list">{[...groups.values()].map((streams) => {
+    const stream = streams[0];
+    return <ResultBoard key={`${stream.id}-${batchIndex}`} activity={activity} stream={stream} batch={stream.batches[batchIndex]} heading={heading} displayLabel={streams.length > 1 ? "함께 세는 결과" : undefined} />;
+  })}</div>;
 }
 
 export function ForecastChoices({ kind, value, onChange }: { kind: SourceKind; value?: WordForecast; onChange: (forecast: WordForecast) => void }) {
@@ -59,11 +74,52 @@ export function ForecastChoices({ kind, value, onChange }: { kind: SourceKind; v
   </fieldset>;
 }
 
-export function DecisionChoices({ activity, value, onChange }: { activity: ForecastActivity; value?: string; onChange: (choice: string) => void }) {
+function plainFraction(fraction: Fraction) {
+  return `${fraction.numerator}/${fraction.denominator}`;
+}
+
+function DecisionDataSummary({ activity, batchCount }: { activity: ForecastActivity; batchCount: 1 | 2 }) {
+  const modelBased = activity.publicDecisionRule.kind === "higher-known-model" || activity.publicDecisionRule.kind === "known-model-next-trial";
+  const optionStreams = activity.streams.filter((stream) => activity.publicDecisionRule.options.includes(stream.id));
+  const streams = activity.publicDecisionRule.kind === "known-model-next-trial"
+    ? activity.streams
+    : optionStreams.length > 0
+      ? optionStreams
+      : activity.streams.filter((stream) => stream.id === activity.primaryStreamId);
+  const values = streams.map((stream) => {
+    if (modelBased && activity.knownModel) {
+      return {
+        label: `신호판의 ${stream.label} 칸 비율`,
+        fraction: calculateKnownModelProbability({
+          outcomes: activity.knownModel.outcomes,
+          targetOutcomes: activity.knownModel.eventOutcomesByStream[stream.id],
+          equallyLikely: activity.knownModel.equallyLikely,
+        }),
+      };
+    }
+    return { label: stream.label, fraction: activity.checkpoints[batchCount - 1].expectedCounts[stream.id] };
+  });
+  const singleObserved = !modelBased && values.length === 1;
+  return <aside className="decision-data-summary" aria-label="선택에 쓸 자료">
+    <strong>{modelBased ? "신호판의 칸을 바로 비교해요" : batchCount === 1 ? "첫 자료를 바로 비교해요" : "모두 합친 자료를 바로 비교해요"}</strong>
+    <ul>{values.map(({ label, fraction }) => <li key={label}>{singleObserved ? `${batchCount === 1 ? "첫 자료의" : "모두 합친 자료의"} ${label} 비율` : label} {plainFraction(fraction)}</li>)}</ul>
+  </aside>;
+}
+
+export function DecisionChoices({ activity, batchCount, value, onChange }: { activity: ForecastActivity; batchCount: 1 | 2; value?: string; onChange: (choice: string) => void }) {
   return <fieldset className="choice-set" data-error-target="decision" tabIndex={-1}><legend>지금 자료를 보고 하나 골라요</legend>
+    <DecisionDataSummary activity={activity} batchCount={batchCount} />
     <p className="rule-text">고르는 기준: {activity.publicDecisionRule.text}</p>
     <div className="choice-grid">{activity.publicDecisionRule.options.map((option) => <label className="choice-card" key={option}><input type="radio" data-testid={`decision-${option}`} name="decision" value={option} checked={value === option} onChange={() => onChange(option)} /><span>{decisionLabel(activity, option) ?? option}</span></label>)}</div>
   </fieldset>;
+}
+
+export function KnownModelComparison({ observed, known, batchCount }: { observed: Fraction; known: Fraction; batchCount: 1 | 2 }) {
+  return <aside className="source-comparison" aria-label="실제 결과와 신호판 비교">
+    <p><strong>{batchCount === 1 ? "이번에 나온 결과" : "모두 합친 실제 결과"}</strong> <span>{plainFraction(observed)}</span></p>
+    <p><strong>{batchCount === 1 ? "예보에 쓸 신호판의 칸" : "신호판의 칸은 그대로예요: 예보에 쓸 값"}</strong> <span>{plainFraction(known)}</span></p>
+    <small>이번에 나온 횟수와 신호판의 칸은 다를 수 있어요. 다음 한 번을 예보할 때는 바뀌지 않는 신호판의 칸을 봐요.</small>
+  </aside>;
 }
 
 export function ActivityCondition({ activity }: { activity: ForecastActivity }) {

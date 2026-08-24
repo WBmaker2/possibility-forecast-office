@@ -48,6 +48,13 @@ h1[tabindex="-1"]:focus { outline:none; }
 .count-fraction { display:grid; grid-template-columns:minmax(0,1fr) 1.4rem minmax(0,1fr); align-items:end; gap:.5rem; max-width:560px; margin-top:.65rem; }
 .count-fraction label { display:grid; gap:.25rem; margin:0; align-items:stretch; color:var(--muted); font-size:.86rem; font-weight:800; }.count-fraction > span { padding-bottom:.55rem; color:var(--navy); font-size:1.4rem; font-weight:900; text-align:center; }
 .count-fraction select { width:100%; min-height:44px; border:2px solid var(--navy); border-radius:7px; padding:.2rem; color:var(--ink); background:#fff; }
+.addition-guide { display:flex; flex-wrap:wrap; gap:.35rem 1rem; margin:.6rem 0; padding:.65rem .75rem; border-left:5px solid var(--yellow); background:#fff9dd; font-size:.88rem; font-weight:800; }
+.decision-data-summary,.source-comparison { margin:.8rem 0; padding:.8rem 1rem; border:2px solid #8ec9cd; border-radius:10px; background:#edfafa; }
+.decision-data-summary ul { display:flex; flex-wrap:wrap; gap:.35rem 1.2rem; margin:.35rem 0 0; padding-left:1.2rem; }
+.decision-data-summary b,.source-comparison span { color:var(--navy); font-size:1.05rem; }
+.source-comparison { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.5rem 1rem; }
+.source-comparison p { margin:0; }
+.source-comparison small { grid-column:1 / -1; color:var(--muted); }
 .feedback-banner { display:flex; gap:.65rem; align-items:flex-start; margin:0 0 1rem; padding:.85rem 1rem; border:2px solid var(--teal); border-radius:10px; background:#edfafa; }
 .feedback-banner strong { flex:0 0 auto; color:#075c62; }.feedback-banner.error { border-color:#a84118; background:#fff0eb; }.feedback-banner.error strong { color:#8a2d0d; }.feedback-banner.info { border-color:#b28700; background:#fff9dd; }.feedback-banner.info strong { color:#705500; }.overclaim-practice .feedback-banner { margin:1rem 0 0; }
 .feedback-banner span,.step p,.concept p,.condition-list dd { word-break:keep-all; overflow-wrap:break-word; }
