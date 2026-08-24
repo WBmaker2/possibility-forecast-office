@@ -68,6 +68,8 @@ h1[tabindex="-1"]:focus { outline:none; }
 
 @media (max-width:600px) {
   .learning-path { grid-template-columns:1fr; }
+  .start-actions { display:grid; grid-template-columns:1fr; }
+  .start-actions .guided-action { width:100%; }
   .overclaim-options { grid-template-columns:1fr; }
   .feedback-banner { flex-direction:column; gap:.25rem; }
   .source-comparison { grid-template-columns:1fr; }

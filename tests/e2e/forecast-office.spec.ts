@@ -259,6 +259,7 @@ test("keeps the first action visible and uses child-friendly learning words", as
 test("makes the next action wide and gently noticeable on a phone", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await openReadyPage(page);
+  expect((await page.getByTestId("activity-start").boundingBox())?.width).toBeGreaterThanOrEqual(280);
   await page.getByTestId("activity-start").click();
 
   const nextButton = page.getByTestId("condition-confirm");
