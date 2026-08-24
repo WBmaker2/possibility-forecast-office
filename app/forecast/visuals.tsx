@@ -3,6 +3,7 @@
 import type { ForecastActivity, ResultBatch, ResultStream } from "../content/schema";
 import { reduceFraction, relationToHalf } from "../domain/fractions";
 import type { Fraction, SourceKind, WordForecast } from "../domain/types";
+import { withSubjectParticle } from "./korean";
 import { decisionLabel, wordLabels } from "./session";
 
 export function SourceBadge({ kind }: { kind: SourceKind }) {
@@ -69,7 +70,7 @@ export function ActivityCondition({ activity }: { activity: ForecastActivity }) 
   const primary = activity.streams.find((stream) => stream.id === activity.primaryStreamId)!;
   const labelForOutcome = (id: string) => activity.outcomes.find((outcome) => outcome.id === id)?.label ?? id;
   return <section className="panel condition-panel"><SourceBadge kind={activity.sourceKind} /><h2>무엇을 찾을지 먼저 확인해요</h2>
-    <dl className="condition-list"><div><dt>찾을 결과</dt><dd>{primary.label}가 나타남</dd></div><div><dt>결과 그림</dt><dd>{activity.outcomes.map(({ label }) => label).join(", ")}</dd></div><div><dt>확인 방법</dt><dd>{activity.knownModel?.replacementRule ?? "안쪽은 알 수 없고, 실제로 나온 결과만 봐요."}</dd></div></dl>
+    <dl className="condition-list"><div><dt>찾을 결과</dt><dd>{withSubjectParticle(primary.label)} 나타남</dd></div><div><dt>결과 그림</dt><dd>{activity.outcomes.map(({ label }) => label).join(", ")}</dd></div><div><dt>확인 방법</dt><dd>{activity.knownModel?.replacementRule ?? "안쪽은 알 수 없고, 실제로 나온 결과만 봐요."}</dd></div></dl>
     {activity.knownModel && <div className="model-note"><strong>신호판의 칸</strong><p>각 칸은 뽑힐 기회가 같아요: {activity.knownModel.outcomes.map(labelForOutcome).join(" · ")}</p></div>}
   </section>;
 }
