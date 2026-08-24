@@ -45,3 +45,4 @@ next-env.d.ts
 /.gstack/
 /dist-pages/
 /.playwright-cli/
+/.playwright-mcp/

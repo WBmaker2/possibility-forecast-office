@@ -1,0 +1,22 @@
+{
+  "app": "possibility-forecast-office",
+  "date": "2026-08-25",
+  "branch": "main",
+  "commit": "575cb91",
+  "tier": "standard",
+  "urls": {
+    "public": "https://possibility-forecast-office.wbmaker.chatgpt.site",
+    "local": "http://localhost:4017"
+  },
+  "healthScore": 55,
+  "issues": [
+    {"id": "ISSUE-001", "severity": "critical", "status": "open"},
+    {"id": "ISSUE-002", "severity": "high", "status": "open"},
+    {"id": "ISSUE-003", "severity": "high", "status": "open"},
+    {"id": "ISSUE-004", "severity": "high", "status": "open"},
+    {"id": "ISSUE-005", "severity": "medium", "status": "open"},
+    {"id": "ISSUE-006", "severity": "medium", "status": "open"},
+    {"id": "ISSUE-007", "severity": "medium", "status": "open"},
+    {"id": "ISSUE-008", "severity": "medium", "status": "open"}
+  ]
+}
