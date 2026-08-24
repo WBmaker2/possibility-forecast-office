@@ -219,6 +219,7 @@ export function decisionLabel(activity: ForecastActivity, decision?: string): st
   if (!decision) return undefined;
   if (decision === "need-more-data") return "같음 · 자료 더 보기";
   if (decision === "even") return "반반";
+  if (decision in wordLabels) return wordLabels[decision as WordForecast];
   return activity.streams.find((stream) => stream.id === decision)?.label ?? decision;
 }
 

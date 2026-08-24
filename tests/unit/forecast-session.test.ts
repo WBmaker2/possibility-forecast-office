@@ -6,6 +6,7 @@ import {
   activityCounts,
   countSelectionError,
   createSession,
+  decisionLabel,
   expectedForecast,
   isFirstCountChoiceCorrect,
   isCountSelectionCorrect,
@@ -132,5 +133,12 @@ describe("학습 세션 계산", () => {
     expect(record.final.primary).toEqual({ numerator: 9, denominator: 20 });
     expect(record.revision).toBe("change");
     expect(JSON.stringify(record)).not.toMatch(/score|time|attempt/i);
+  });
+
+  it("내부 가능성 값은 선택지와 기록에서 쉬운 한국어로 보여 줍니다", () => {
+    const mission = missions[1];
+
+    expect(decisionLabel(mission, "more-likely")).toBe("일어날 것 같아요");
+    expect(decisionLabel(mission, "less-likely")).toBe("일어날 것 같지 않아요");
   });
 });

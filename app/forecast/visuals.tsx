@@ -3,7 +3,7 @@
 import type { ForecastActivity, ResultBatch, ResultStream } from "../content/schema";
 import { reduceFraction, relationToHalf } from "../domain/fractions";
 import type { Fraction, SourceKind, WordForecast } from "../domain/types";
-import { wordLabels } from "./session";
+import { decisionLabel, wordLabels } from "./session";
 
 export function SourceBadge({ kind }: { kind: SourceKind }) {
   return <span className={`source-badge ${kind}`}>{kind === "known-model" ? "신호판의 칸으로 계산" : "실제로 나온 결과로 계산"}</span>;
@@ -59,14 +59,9 @@ export function ForecastChoices({ kind, value, onChange }: { kind: SourceKind; v
 }
 
 export function DecisionChoices({ activity, value, onChange }: { activity: ForecastActivity; value?: string; onChange: (choice: string) => void }) {
-  const labelFor = (option: string) => {
-    if (option === "need-more-data") return "같음 · 자료 더 보기";
-    if (option === "even") return "반반";
-    return activity.streams.find((stream) => stream.id === option)?.label ?? option;
-  };
   return <fieldset className="choice-set" data-error-target="decision" tabIndex={-1}><legend>지금 자료를 보고 하나 골라요</legend>
     <p className="rule-text">고르는 기준: {activity.publicDecisionRule.text}</p>
-    <div className="choice-grid">{activity.publicDecisionRule.options.map((option) => <label className="choice-card" key={option}><input type="radio" data-testid={`decision-${option}`} name="decision" value={option} checked={value === option} onChange={() => onChange(option)} /><span>{labelFor(option)}</span></label>)}</div>
+    <div className="choice-grid">{activity.publicDecisionRule.options.map((option) => <label className="choice-card" key={option}><input type="radio" data-testid={`decision-${option}`} name="decision" value={option} checked={value === option} onChange={() => onChange(option)} /><span>{decisionLabel(activity, option) ?? option}</span></label>)}</div>
   </fieldset>;
 }
 
