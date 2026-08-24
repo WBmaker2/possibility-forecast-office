@@ -3,16 +3,16 @@
 | Field | Value |
 |-------|-------|
 | **Date** | 2026-08-25 |
-| **URL** | `https://possibility-forecast-office.wbmaker.chatgpt.site` (404), `http://localhost:4017` |
+| **URL** | https://wbmaker2.github.io/possibility-forecast-office/ (200), 기존 Sites URL (404), http://localhost:4017 |
 | **Branch** | `main` |
-| **Commit** | `575cb91` |
+| **Commit** | 0f7a9ee (배포 소스) |
 | **PR** | — |
 | **Tier** | Standard |
 | **Scope** | 첫 화면, 개념, 안내 연습, 미션 1~5, 최종 요약, 375×812 모바일 |
-| **Duration** | 기준선 약 25분 |
+| **Duration** | 기준선 약 25분 + 수정 후 재검증 약 35분 |
 | **Pages visited** | SPA 1개, 주요 상태 49개 |
-| **Screenshots** | 기준선 4개 |
-| **Framework** | React/Vinext |
+| **Screenshots** | 기준선 4개 + 수정 후 9개 |
+| **Framework** | React/Vinext/Vite |
 
 ## Baseline Health Score: 55/100
 
@@ -25,6 +25,18 @@
 | UX | 42 |
 | Performance | 90 |
 | Accessibility | 88 |
+
+## Final Health Score: 96/100
+
+| Category | Score |
+|----------|-------|
+| Console | 100 |
+| Links | 100 |
+| Visual | 96 |
+| Functional | 100 |
+| UX | 96 |
+| Performance | 90 |
+| Accessibility | 96 |
 
 ## Top 3 Things to Fix
 
@@ -138,17 +150,63 @@
 
 ## Fixes Applied
 
-구현과 회귀 테스트 뒤 이 표를 갱신한다.
-
 | Issue | Fix Status | Commit | Files Changed |
 |-------|-----------|--------|---------------|
-| ISSUE-001~008 | planned | — | — |
+| ISSUE-001 | fixed — GitHub Pages 공개 주소로 복구 | 0f7a9ee 배포 | 기존 Pages 워크플로 재사용 |
+| ISSUE-002 | fixed — 쉬운 한국어 선택 이름 | 136cee5 | session.ts, visuals.tsx, 테스트 |
+| ISSUE-003 | fixed — 선택 비율·합치기 도움식 | 7b0d263 | MissionFlow.tsx, visuals.tsx, 콘텐츠·테스트 |
+| ISSUE-004 | fixed — 실제 결과와 신호판 칸 비교 | 7b0d263 | MissionFlow.tsx, visuals.tsx |
+| ISSUE-005 | fixed — 공유 결과판 한 번만 표시 | 7b0d263 | visuals.tsx, 테스트 |
+| ISSUE-006 | fixed — 빈칸·오답별 다음 행동 안내 | 5b1734b | feedback.ts, ForecastOffice.tsx, 테스트 |
+| ISSUE-007 | fixed — 조사·문장부호 교정 | 5ba499b | korean.ts, visuals.tsx, 테스트 |
+| ISSUE-008 | fixed — 지금 할 일·아우라·모바일 전체 폭 | df8fa3d, 6cf9f2c | StepAction.tsx, CSS, E2E |
+
+## Final Browser Evidence
+
+- 공개 주소 HTTP 200, 제목 '가능성 예보국'
+- 375×812 시작 버튼 292px, 단계 버튼 328px
+- 375px 가로 넘침 없음
+- 현재 공개 페이지 콘솔 오류 0개
+- 안내 연습과 미션 1~5 완료, 최종 요약 5행
+- 업데이트 내역에 2026-08-25 항목 노출
+- 실제 아동 참가자 조사는 미실시했으며 초등 5~6학년 첫 사용 상황을 가정한 직접 조작 점검임
+
+### 수정 후 화면
+
+- 모바일 시작: ![수정 후 모바일 시작](screenshots/2026-08-25/after-mobile-start.png)
+- 분수 위·아래와 다음 행동: ![수정 후 첫 자료](screenshots/2026-08-25/after-mobile-first-count.png)
+- 실제 결과와 신호판 비교: ![수정 후 신호판 비교](screenshots/2026-08-25/after-known-model-comparison.png)
+- 선택에 쓸 비율 요약: ![수정 후 선택 자료](screenshots/2026-08-25/after-decision-summary.png)
+- 누적 덧셈 도움식: ![수정 후 합치기 도움](screenshots/2026-08-25/after-cumulative-help.png)
+- 같은 비율 오답 안내: ![수정 후 같은 비율 안내](screenshots/2026-08-25/after-same-rate-guidance.png)
+- 공유 결과판 한 번 표시: ![수정 후 공유 결과판](screenshots/2026-08-25/after-shared-result-board.png)
+- 모바일 완료 요약: ![수정 후 완료 화면](screenshots/2026-08-25/after-mobile-summary.png)
+- 실제 공개 페이지: ![공개 모바일 첫 자료](screenshots/2026-08-25/after-public-mobile-first-count.png)
+
+## Verification
+
+| Check | Result |
+|-------|--------|
+| TypeScript | pass |
+| ESLint | pass |
+| 콘텐츠 계약 | 안내 1개 + 미션 5개 pass |
+| Unit | 43 pass |
+| SSR HTML | 2 pass |
+| Playwright E2E | 13 pass |
+| Vinext build | pass |
+| GitHub Pages build | pass |
+| Runtime security audit | 0 vulnerabilities |
+| GitHub Pages deploy | success |
 
 ## Ship Readiness
 
 | Metric | Value |
 |--------|-------|
-| Health score | 55 → 측정 예정 |
+| Health score | 55 → 96 |
 | Issues found | 8 |
-| Fixes applied | 0 |
+| Fixes applied | 8 |
 | Deferred | 0 |
+
+공개 주소: https://wbmaker2.github.io/possibility-forecast-office/
+
+배포 실행: https://github.com/WBmaker2/possibility-forecast-office/actions/runs/32789496782

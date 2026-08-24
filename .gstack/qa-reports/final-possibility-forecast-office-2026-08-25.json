@@ -1,0 +1,41 @@
+{
+  "app": "possibility-forecast-office",
+  "date": "2026-08-25",
+  "branch": "main",
+  "sourceCommit": "0f7a9eed5f5b4e555a1a0174aa2861043185860b",
+  "tier": "standard",
+  "urls": {
+    "public": "https://wbmaker2.github.io/possibility-forecast-office/",
+    "legacySites": "https://possibility-forecast-office.wbmaker.chatgpt.site",
+    "local": "http://localhost:4017"
+  },
+  "healthScore": {
+    "baseline": 55,
+    "final": 96
+  },
+  "issues": [
+    {"id": "ISSUE-001", "status": "fixed"},
+    {"id": "ISSUE-002", "status": "fixed"},
+    {"id": "ISSUE-003", "status": "fixed"},
+    {"id": "ISSUE-004", "status": "fixed"},
+    {"id": "ISSUE-005", "status": "fixed"},
+    {"id": "ISSUE-006", "status": "fixed"},
+    {"id": "ISSUE-007", "status": "fixed"},
+    {"id": "ISSUE-008", "status": "fixed"}
+  ],
+  "verification": {
+    "unitTests": 43,
+    "ssrTests": 2,
+    "e2eTests": 13,
+    "publicHttpStatus": 200,
+    "publicConsoleErrors": 0,
+    "mobileHorizontalOverflow": false,
+    "runtimeAuditVulnerabilities": 0
+  },
+  "deployment": {
+    "provider": "GitHub Pages",
+    "status": "success",
+    "run": "https://github.com/WBmaker2/possibility-forecast-office/actions/runs/32789496782"
+  },
+  "participantNote": "No children were recruited; this was a direct elementary-first-use heuristic browser test."
+}
