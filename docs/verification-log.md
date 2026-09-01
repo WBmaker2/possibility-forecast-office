@@ -2,7 +2,29 @@
 
 ## 기록 원칙
 
-이 문서는 실제 실시한 자동 검증과 아직 필요한 사람의 수동 검토를 구분합니다. 실행하지 않은 항목은 `미실시`로 기록하며 통과로 표시하지 않습니다. 배포는 소유자 전용 Sites 운영 주소와 로그인 경계까지 확인했습니다.
+이 문서는 실제 실시한 자동 검증과 아직 필요한 사람의 수동 검토를 구분합니다. 실행하지 않은 항목은 `미실시`로 기록하며 통과로 표시하지 않습니다. 현재 공개 학습자 운영 주소는 GitHub Pages이며, 과거 Sites 확인은 역사적 기록으로 구분합니다.
+
+## 2026-09-01 초등학생 UX 개선·공개 Pages 배포
+
+| 구분 | 명령·절차 | 상태 | 실제 결과 |
+|---|---|---|---|
+| 타입 검사 | `npm run typecheck` | 통과 | TypeScript 오류 0개 |
+| 정적 검사 | `npm run lint` | 통과 | ESLint 오류 0개 |
+| 단위 검사 | `npm run test:unit -- --reporter=dot` | 통과 | 테스트 43개 통과 |
+| 콘텐츠 검사 | `npm run validate:content` | 통과 | 안내 활동 1개와 일반 미션 5개 검증 통과 |
+| SSR 검사 | `npm test` | 통과 | 프로덕션 빌드와 서버 렌더링 테스트 2개 통과 |
+| 브라우저 E2E | Playwright 전체 실행 | 통과 | E2E 14개 통과(320px·375px·전체 학습 흐름 포함) |
+| Pages 빌드 | `npm run build:pages` | 통과 | `dist-pages` 정적 산출물 생성 |
+| 의존성 감사 | `npm audit --omit=dev` | 통과 | 취약점 0개 |
+| 공개 브라우저 | GitHub Pages에서 튜토리얼→미션 5개→요약 | 통과 | 요약 행 5개, `다음 할 일`, 가로 넘침 0px, 콘솔·페이지 오류·요청 실패 0 |
+
+### 커밋·푸시·배포
+
+- 커밋: `449ce7f` (`fix: improve elementary learner guidance`)
+- GitHub `origin/main` 푸시 완료
+- [GitHub Actions Deploy to GitHub Pages 실행 33507596048](https://github.com/WBmaker2/possibility-forecast-office/actions/runs/33507596048) 성공
+- 공개 주소: [가능성 예보국](https://wbmaker2.github.io/possibility-forecast-office/)
+- Actions에 Node.js 20 deprecation annotation이 있었지만 build/deploy job은 성공했습니다.
 
 ## 2026-07-17 자동 검증 결과
 
