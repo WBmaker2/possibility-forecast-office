@@ -272,6 +272,25 @@ test("makes the next action wide and gently noticeable on a phone", async ({ pag
   await expect.poll(() => nextButton.evaluate((button) => getComputedStyle(button).animationName)).toBe("none");
 });
 
+test("makes concept practice and summary next actions discoverable on a phone", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openReadyPage(page);
+  await page.getByTestId("concept-open").click();
+  const conceptJump = page.getByTestId("concept-jump");
+  await expect(conceptJump).toBeVisible();
+  await expect(conceptJump).toHaveAttribute("href", "#concept-practice");
+  await conceptJump.click();
+  await expect(page.getByRole("heading", { name: "나온 결과 말 고르기" })).toBeVisible();
+  await expect.poll(() => page.locator("#concept-practice").evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return rect.top >= 0 && rect.top < window.innerHeight;
+  })).toBe(true);
+
+  await openReadyPage(page, "/?fixture=summary");
+  await expect(page.getByTestId("summary-next")).toBeVisible();
+  await expect(page.getByTestId("summary-next")).toHaveText(/표를 하나씩 읽은 뒤, 표 아래 버튼/);
+});
+
 test("uses a natural count error for a mission with several results", async ({ page }) => {
   await openReadyPage(page);
   await page.getByTestId("activity-start").click();
